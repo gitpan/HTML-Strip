@@ -5,7 +5,7 @@ README
 Strip.pm
 Strip.xs
 strip_html.h
-strip_html.cpp
+strip_html.c
 perlobject.map
 typemap
 test.pl

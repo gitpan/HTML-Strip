@@ -1,8 +1,8 @@
 TYPEMAP
-HTMLStripper * O_HTMLSTRIP
+Stripper * O_STRIP
 
 INPUT
-O_HTMLSTRIP
+O_STRIP
 	if( sv_isobject($arg) && (SvTYPE(SvRV($arg)) == SVt_PVMG) )
 		$var = ($type)SvIV((SV*)SvRV( $arg ));
 	else{
@@ -11,5 +11,5 @@ O_HTMLSTRIP
 	}
 
 OUTPUT
-O_HTMLSTRIP
+O_STRIP
 	sv_setref_pv( $arg, "HTML::Strip", (void*)$var );

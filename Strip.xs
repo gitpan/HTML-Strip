@@ -1,12 +1,7 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#ifdef __cplusplus
-}
-#endif
 
 #include "strip_html.h"
 
@@ -14,41 +9,69 @@ MODULE = HTML::Strip		PACKAGE = HTML::Strip
 
 PROTOTYPES: ENABLE
 
-HTMLStripper *
-create();
-    CODE:
-        RETVAL = new HTMLStripper();
-    OUTPUT:
-        RETVAL
+Stripper *
+create()
+ PREINIT:
+  Stripper * stripper;
+ CODE:
+  New( 0, stripper, 1, Stripper );
+  reset( stripper );
+  RETVAL = stripper;
+ OUTPUT:
+  RETVAL
 
 void
-HTMLStripper::DESTROY()
+DESTROY( stripper )
+  Stripper * stripper
+ CODE:
+  Safefree( stripper );
 
 char *
-HTMLStripper::strip_html( raw )
-    INPUT:
-        char *  raw
+strip_html( stripper, raw )
+  Stripper * stripper
+  char * raw
+ PREINIT:
+  char * clean;
+  int size = strlen(raw) + 1;
+ INIT:
+  New( 0, clean, size, char );
+ CODE:
+  strip_html( stripper, raw, clean );
+  RETVAL = clean;
+ OUTPUT:
+  RETVAL  
+ CLEANUP:
+  Safefree( clean );
 
 void
-HTMLStripper::reset()
+reset( stripper )
+  Stripper * stripper
 
 void
-HTMLStripper::set_striptags(striptags)
-    INPUT:
-        SV * striptags
-    INIT:
-        I32 numstriptags = 0;
-        int n;
+clear_striptags( stripper )
+  Stripper * stripper
 
-        if( (!SvROK(striptags)) ||
-            (SvTYPE(SvRV(striptags)) != SVt_PVAV) ||
-            ((numstriptags = av_len((AV *)SvRV(striptags))) < 0) ) {
-                XSRETURN_UNDEF;
-        }
-    CODE:
-        THIS->clear_striptags();
-        for (n = 0; n <= numstriptags; n++) {
-            STRLEN l;
-            char * striptag = SvPV(*av_fetch((AV *)SvRV(striptags), n, 0), l);
-            THIS->add_striptag( striptag );
-        }
+void
+add_striptag( stripper, tag )
+  Stripper * stripper
+  char * tag
+
+void
+set_striptags( stripper, tags )
+  Stripper * stripper
+  SV * tags
+ PREINIT:
+  I32 numtags = 0;
+  int n;
+  if( (!SvROK(tags)) ||
+     (SvTYPE(SvRV(tags)) != SVt_PVAV) ||
+        ((numtags = av_len((AV *)SvRV(tags))) < 0) ) {
+      XSRETURN_UNDEF;
+  }
+ CODE:
+  clear_striptags( stripper );
+  for (n = 0; n <= numtags; n++) {
+     STRLEN l;
+     char * tag = SvPV(*av_fetch((AV *)SvRV(tags), n, 0), l);
+     add_striptag( stripper, tag );
+  }

@@ -22,10 +22,9 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-our @EXPORT = qw(
-                );
+our @EXPORT = qw();
 
-our $VERSION = '0.05';
+our $VERSION = '1.00';
 
 bootstrap HTML::Strip $VERSION;
 
@@ -39,7 +38,7 @@ my @default_striptags = qw( title
 sub new {
   my $class = shift;
   my $obj = create();
-  $obj->set_striptags( \@default_striptags );
+  $obj->set_striptags( shift() || \@default_striptags );
   bless $obj, $class;
 }
 
@@ -170,23 +169,6 @@ to remove excess whitespace (for example, using C<tr/ / /s;>);
 HTML::Strip attempt no decoding of HTML entities. Use the
 imaginatively-named L<HTML::Entities> (specifically, the
 decode_entities() method) for this purpose.
-
-=head2 FAQ
-
-=item C<make> dies with the following error. What is wrong?
-
-  /home/local/bin/perl5.8.0 /usr/local/lib/perl5/5.8.0/ExtUtils/xsubpp -C++ -typemap /usr/local/lib/perl5/5.8.0/ExtUtils/typemap -typemap perlobject.map -typemap typemap  Strip.xs > Strip.xsc && mv Strip.xsc Strip.c
-  Unknown option: C++
-  Usage: xsubpp [-v] [-except] [-prototypes] [-noversioncheck] [-nolinenumbers] [-nooptimize] [-noinout] [-noargtypes] [-s pattern] [-typemap typemap]... file.xs
-  make: *** [Strip.c] Error 255
-
-For some reason, your version of L<xsubpp> doesn't understand the
-C<-C++> option. Try removing the line:
-
-C<'XSOPT'             =E<gt> '-C++',>
-
-from C<Makefile.PL>, and run C<perl Makefile.PL> again, followed by
-C<make>.
 
 =head2 EXPORT
 

@@ -2,33 +2,11 @@
 #define MAX_TAGNAMELENGTH 20
 #define MAX_STRIPTAGS 20
 
-class HTMLStripper {
-
- public:
-
-  HTMLStripper() {
-    this->reset();
-  };
-
-  ~HTMLStripper() {};
-
-  char *
-    strip_html( const char * raw );
-  
-  void
-    reset();
-  
-  void
-    clear_striptags();
-
-  void
-    add_striptag( char * );
-
- private:
-
+typedef struct Stripper {
   int f_in_tag;
   int f_closing;
   int f_lastchar_slash;
+
   char tagname[MAX_TAGNAMELENGTH];
   char * p_tagname;
   char f_full_tagname;
@@ -47,7 +25,11 @@ class HTMLStripper {
   char striptag[MAX_TAGNAMELENGTH];
   char striptags[MAX_STRIPTAGS][MAX_TAGNAMELENGTH];
   int numstriptags;
+} Stripper;
 
-  void
-    check_end( char end );
-};
+void strip_html( Stripper * stripper, const char * raw, char * clean );
+void reset( Stripper * stripper );
+void clear_striptags( Stripper * stripper );
+void add_striptag( Stripper * stripper, char * tag );
+
+void check_end( Stripper * stripper, char );

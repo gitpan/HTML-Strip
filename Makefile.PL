@@ -1,7 +1,5 @@
 use ExtUtils::MakeMaker;
 
-$CC = 'g++';
-
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 WriteMakefile(
@@ -13,8 +11,6 @@ WriteMakefile(
        AUTHOR     => 'Alex Bowley <kilinrax@cpan.org>') : ()),
     'LIBS'		=> [''], # e.g., '-lm'
     'DEFINE'		=> '', # e.g., '-DHAVE_SOMETHING'
-    'CC'                => $CC,
-    'LD'                => '$(CC)',
 	# Insert -I. if you add *.h files later:
     'INC'		=> '', # e.g., '-I/usr/include/other'
 	# Un-comment this if you add C files to link with later:
