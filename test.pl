@@ -6,7 +6,7 @@
 # change 'tests => 1' to 'tests => last_test_to_print';
 
 use Test;
-BEGIN { plan tests => 12 };
+BEGIN { plan tests => 15 };
 use HTML::Strip;
 ok(1); # If we made it this far, we're ok.
 
@@ -44,3 +44,11 @@ ok( $hs2->parse( '<foo>foo</foo>bar' ) eq ' bar' );
 
 ok( $hs->parse( '<script>foo</script>bar' ) eq ' bar' );
 
+my @striptags = qw(baz quux);
+$hs->set_striptags( @striptags );
+
+ok( $hs->parse( '<baz>fumble</baz>bar<quux>foo</quux>' ) eq ' bar ' );
+
+ok( $hs->parse( '<baz>fumble<quux/>foo</baz>bar' ) eq 'bar' );
+
+ok( $hs->parse( '<foo> </foo> <bar> baz </bar>' ) eq '    baz ' );

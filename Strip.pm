@@ -24,7 +24,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw();
 
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 
 bootstrap HTML::Strip $VERSION;
 
@@ -40,6 +40,15 @@ sub new {
   my $obj = create();
   $obj->set_striptags( shift() || \@default_striptags );
   bless $obj, $class;
+}
+
+sub set_striptags {
+  my ($self, @tags) = @_;
+  if( ref($tags[0]) eq 'ARRAY' ) {
+    $self->set_striptags_ref( $tags[0] );
+  } else {
+    $self->set_striptags_ref( \@tags );
+  }
 }
 
 sub parse {
@@ -66,7 +75,7 @@ HTML::Strip - Perl extension for stripping HTML markup from text.
 
   my $hs = HTML::Strip->new();
 
-  $hs->parse( $html );
+  my $clean_text = $hs->parse( $raw_html );
   $hs->eof;
 
 =head1 DESCRIPTION
@@ -140,6 +149,14 @@ Takes a string as an argument, returns it stripped of HTML.
 
 Resets the current state information, ready to parse a new block of HTML.
 
+=item clear_striptags()
+
+Clears the current set of strip tags.
+
+=item add_striptag()
+
+Adds the string passed as an argument to the current set of strip tags.
+
 =item set_striptags()
 
 Takes a reference to an array of strings, which replace the current
@@ -159,14 +176,15 @@ following HTML:
 
 Which gives the following output:
 
-C< HTML::Strip E<nbsp>E<nbsp>E<nbsp>E<nbsp>E<nbsp>E<nbsp>E<nbsp> Fast and brutal E<nbsp>E<nbsp>E<nbsp>E<nbsp> >
+C<E<nbsp>HTML::StripE<nbsp>E<nbsp>E<nbsp>E<nbsp>E<nbsp>fast, and brutalE<nbsp>E<nbsp>E<nbsp>>
 
 Thus, you will probably want to post-filter the output of HTML::Strip
-to remove excess whitespace (for example, using C<tr/ / /s;>);
+to remove excess whitespace (for example, using C<tr/ / /s;>).
+(This has been improved since previous releases, but is still an issue)
 
 =item HTML Entities
 
-HTML::Strip attempt no decoding of HTML entities. Use the
+HTML::Strip attempts no decoding of HTML entities. Use the
 imaginatively-named L<HTML::Entities> (specifically, the
 decode_entities() method) for this purpose.
 

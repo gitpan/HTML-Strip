@@ -56,16 +56,10 @@ strip_html( Stripper * stripper, const char * raw, char * output ) {
       } else {
         if( stripper->f_in_quote ) {
           /* inside a quote */
-          /* end of quote if current character is the right quote character, and not preceeded by an odd number of escapes ('\') */
-          if( *p_raw == stripper->quote && (stripper->quote_escapes & 1) != 1 ) {
+          /* end of quote if current character matches the opening quote character */
+          if( *p_raw == stripper->quote ) {
             stripper->quote = 0;
             stripper->f_in_quote = 0;
-          }
-          /* check for escape characters */
-          if( *p_raw == '\\' ) {
-            stripper->quote_escapes++;
-          } else {
-            stripper->quote_escapes = 0;
           }
         } else {
           /* not in a quote */
@@ -119,8 +113,8 @@ strip_html( Stripper * stripper, const char * raw, char * output ) {
         /* copy to stripped provided we're not in a stripped block */
         if( !stripper->f_in_striptag ) {
           *p_output++ = *p_raw;
-          /* reset whitespace tag now we've outputted some text */
-          stripper->f_outputted_space = 0;
+          /* reset whitespace tag according to what character was just outputted */
+          stripper->f_outputted_space = isspace(*p_raw);
         }
       }
     } /* in tag check */
@@ -140,6 +134,7 @@ reset( Stripper * stripper ) {
     
   stripper->f_in_quote = 0;
     
+
   stripper->f_in_decl = 0;
   stripper->f_in_comment = 0;
   stripper->f_lastchar_minus = 0;
@@ -174,8 +169,9 @@ check_end( Stripper * stripper, char end ) {
       stripper->f_in_comment = 0;
       stripper->f_in_decl = 0;
       stripper->f_in_tag = 0;
-      /* we're not in a stripped tag block if the tag is a closed one, e.g. '<script src="foo" />' */
-      if( stripper->f_lastchar_slash ) {
+      /* Do not start a stripped tag block if the tag is a closed one, e.g. '<script src="foo" />' */
+      if( stripper->f_lastchar_slash &&
+          (strcmp( stripper->striptag, stripper->tagname ) == 0) ) {
         stripper->f_in_striptag = 0;
       }
     }

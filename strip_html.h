@@ -15,7 +15,6 @@ typedef struct Stripper {
 
   int f_in_quote;
   char quote;
-  int quote_escapes;
 
   int f_in_decl;
   int f_in_comment;

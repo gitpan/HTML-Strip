@@ -57,21 +57,27 @@ add_striptag( stripper, tag )
   char * tag
 
 void
-set_striptags( stripper, tags )
+set_striptags_ref( stripper, tagref )
   Stripper * stripper
-  SV * tags
+  SV * tagref
  PREINIT:
+  AV * tags;
   I32 numtags = 0;
   int n;
-  if( (!SvROK(tags)) ||
-     (SvTYPE(SvRV(tags)) != SVt_PVAV) ||
-        ((numtags = av_len((AV *)SvRV(tags))) < 0) ) {
-      XSRETURN_UNDEF;
+  if( (SvROK(tagref)) &&
+      (SvTYPE(SvRV(tagref)) == SVt_PVAV) ) {
+    tags = (AV *) SvRV(tagref);  
+  } else {
+    XSRETURN_UNDEF;
+  }
+  numtags = av_len(tags);
+  if( numtags < 0 ) {
+    XSRETURN_UNDEF;
   }
  CODE:
   clear_striptags( stripper );
   for (n = 0; n <= numtags; n++) {
      STRLEN l;
-     char * tag = SvPV(*av_fetch((AV *)SvRV(tags), n, 0), l);
+     char * tag = SvPV(*av_fetch(tags, n, 0), l);
      add_striptag( stripper, tag );
   }

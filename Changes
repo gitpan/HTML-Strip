@@ -1,5 +1,9 @@
 Revision history for Perl extension HTML::Strip.
 
+1.01  Mon Jul  7 18:15:59 2003
+        - Removed provision for escaped quotes in attributes values
+        - More checks to prevent the outputting of extraneous whitespace
+
 1.00  Wed Jun 11 12:05:47 2003
         - rewritten in C, using a struct for each object to keep track
           of state and striptags
