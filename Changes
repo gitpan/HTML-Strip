@@ -1,5 +1,16 @@
 Revision history for Perl extension HTML::Strip.
 
+0.04  Sun Mar 23 12:45:13 2003
+        - Tweaked docs, added FAQ explaining why 0.03 failed cpan testing
+
+0.03  Sat Mar 22 11:20:34 2003
+        - re-written in C++ to make striptags an attribute of each
+          object
+
+0.02  Mon Mar 17 18:20:01 2003
+        - added set_striptags() method
+        - documented module
+
 0.01  Tue Mar  4 18:17:38 2003
 	- original version; created by h2xs 1.21 with options
 		-A -n HTML::Strip html_strip.h

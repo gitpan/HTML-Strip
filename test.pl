@@ -6,7 +6,7 @@
 # change 'tests => 1' to 'tests => last_test_to_print';
 
 use Test;
-BEGIN { plan tests => 11 };
+BEGIN { plan tests => 12 };
 use HTML::Strip;
 ok(1); # If we made it this far, we're ok.
 
@@ -19,7 +19,9 @@ my $hs = new HTML::Strip;
 
 ok( $hs->parse( '<em>test</em>' ) eq 'test ' );
 
-ok( $hs->parse( '<p align="center">test</p>' ) eq 'test ' );
+ok( $hs->parse( 'test' ) eq 'test' );
+
+ok( $hs->parse( '<p align="center">test</p>' ) eq ' test ' );
 
 ok( $hs->parse( '<p align="center>test</p>' ) eq '' );
 
