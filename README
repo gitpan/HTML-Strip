@@ -1,0 +1,19 @@
+HTML/Strip version 0.03
+=======================
+
+This modules strips HTML-like markup from text.
+It is written in XS, and thus much more efficient than using regexes
+for the same task.
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2003 Alex Bowley

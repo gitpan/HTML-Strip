@@ -1,0 +1,6 @@
+Revision history for Perl extension HTML::Strip.
+
+0.01  Tue Mar  4 18:17:38 2003
+	- original version; created by h2xs 1.21 with options
+		-A -n HTML::Strip html_strip.h
+

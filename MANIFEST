@@ -1,0 +1,11 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+Strip.pm
+Strip.xs
+strip_html.h
+strip_html.cpp
+perlobject.map
+typemap
+test.pl
