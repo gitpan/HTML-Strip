@@ -1,5 +1,14 @@
 Revision history for Perl extension HTML::Strip.
 
+1.04  Mon Jan 24 16:41:51 2005
+	- Replaced all instances of strcmp with strcasecmp to make the
+	  module case-insensitive towards HTML tag names
+
+1.03  Wed Jul  7 13:42:26 2004
+	- Added 'emit_spaces' configuration option which can turn off
+	  attempted conversion of HTML tags into spaces
+	- Constructor options now passed in a hash
+
 1.02  Tue Feb 24 16:24:18 2004
         - Yet more checks to prevent extraneous whitespace
         - Added many more tests

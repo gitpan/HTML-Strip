@@ -57,6 +57,11 @@ add_striptag( stripper, tag )
   char * tag
 
 void
+set_emit_spaces( stripper, emit )
+  Stripper * stripper
+  int emit
+
+void
 set_striptags_ref( stripper, tagref )
   Stripper * stripper
   SV * tagref

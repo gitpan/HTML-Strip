@@ -11,8 +11,6 @@ strip_html( Stripper * stripper, const char * raw, char * output ) {
   const char * raw_end = raw + strlen(raw);
   char * p_output = output;
     
-  /* printf( "stripper->tagname = %s, stripper->striptag = %s, stripper->f_in_tag = %i, stripper->f_in_quote= %i, stripper->f_closing = %i, raw = %s\n", stripper->tagname, stripper->striptag, stripper->f_in_tag, stripper->f_in_quote, stripper->f_closing, raw ); */
-
   while( p_raw < raw_end ) {
     if( stripper->f_in_tag ) {
       /* inside a tag */
@@ -37,14 +35,14 @@ strip_html( Stripper * stripper, const char * raw, char * output ) {
             stripper->f_full_tagname = 1;
             /* if we're in a stripped tag block, and this is a closing tag, check to see if it ends the stripped block */
             if( stripper->f_in_striptag && stripper->f_closing ) {
-              if( strcmp( stripper->tagname, stripper->striptag ) == 0 ) {
+              if( strcasecmp( stripper->tagname, stripper->striptag ) == 0 ) {
                 stripper->f_in_striptag = 0;
               }
               /* if we're outside a stripped tag block, check tagname against stripped tag list */
             } else if( !stripper->f_in_striptag && !stripper->f_closing ) {
               int i;
               for( i = 0; i <= stripper->numstriptags; i++ ) {
-                if( strcmp( stripper->tagname, stripper->striptags[i] ) == 0 ) {
+                if( strcasecmp( stripper->tagname, stripper->o_striptags[i] ) == 0 ) {
                   stripper->f_in_striptag = 1;
                   strcpy( stripper->striptag, stripper->tagname );
                 }
@@ -109,20 +107,23 @@ strip_html( Stripper * stripper, const char * raw, char * output ) {
       else {
         /* copy to stripped provided we're not in a stripped block */
         if( !stripper->f_in_striptag ) {
-          /* output a space in place of tags we have previously parsed,
-             and set a flag so we only do this once for every group of tags.
-             done here to prevent unnecessary trailing spaces */
-          if( isspace(*p_raw) ) {
-            /* don't output a space if this character is one anyway */
-            stripper->f_outputted_space = 1;
-          } else {
-            if( !stripper->f_outputted_space &&
-                stripper->f_just_seen_tag ) {
-              *p_output++ = ' ';
+          /* only emit spaces if we're configured to do so (on by default) */
+          if( stripper->o_emit_spaces ){
+            /* output a space in place of tags we have previously parsed,
+               and set a flag so we only do this once for every group of tags.
+               done here to prevent unnecessary trailing spaces */
+            if( isspace(*p_raw) ) {
+              /* don't output a space if this character is one anyway */
               stripper->f_outputted_space = 1;
             } else {
-              /* this character must not be a space */
-              stripper->f_outputted_space = 0;
+              if( !stripper->f_outputted_space &&
+                  stripper->f_just_seen_tag ) {
+                *p_output++ = ' ';
+                stripper->f_outputted_space = 1;
+              } else {
+                /* this character must not be a space */
+                stripper->f_outputted_space = 0;
+              }
             }
           }
           *p_output++ = *p_raw;
@@ -154,22 +155,30 @@ reset( Stripper * stripper ) {
   stripper->f_lastchar_minus = 0;
     
   stripper->f_in_striptag = 0;
+
+  stripper->o_emit_spaces = 1;
 }
 
 void
 clear_striptags( Stripper * stripper ) {
-  strcpy(stripper->striptags[0], "");
+  strcpy(stripper->o_striptags[0], "");
   stripper->numstriptags = 0;
 }
 
 void
 add_striptag( Stripper * stripper, char * striptag ) {
   if( stripper->numstriptags < MAX_STRIPTAGS-1 ) {
-    strcpy(stripper->striptags[stripper->numstriptags++], striptag);
+    strcpy(stripper->o_striptags[stripper->numstriptags++], striptag);
   } else {
     fprintf( stderr, "Cannot have more than %i strip tags", MAX_STRIPTAGS );
   }
 }
+
+void
+set_emit_spaces( Stripper * stripper, int emit ) {
+  stripper->o_emit_spaces = emit;
+}
+
 
 void
 check_end( Stripper * stripper, char end ) {
@@ -185,7 +194,7 @@ check_end( Stripper * stripper, char end ) {
       stripper->f_in_tag = 0;
       /* Do not start a stripped tag block if the tag is a closed one, e.g. '<script src="foo" />' */
       if( stripper->f_lastchar_slash &&
-          (strcmp( stripper->striptag, stripper->tagname ) == 0) ) {
+          (strcasecmp( stripper->striptag, stripper->tagname ) == 0) ) {
         stripper->f_in_striptag = 0;
       }
     }

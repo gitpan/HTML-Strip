@@ -4,6 +4,8 @@ use 5.006;
 use warnings;
 use strict;
 
+use Carp qw( carp croak );
+
 require Exporter;
 require DynaLoader;
 
@@ -17,14 +19,13 @@ our @ISA = qw(Exporter DynaLoader);
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
 our %EXPORT_TAGS = ( 'all' => [ qw(
-                                   strip_html
                                   ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw();
 
-our $VERSION = '1.02';
+our $VERSION = '1.04';
 
 bootstrap HTML::Strip $VERSION;
 
@@ -40,8 +41,18 @@ my @default_striptags = qw( title
 sub new {
   my $class = shift;
   my $obj = create();
-  $obj->set_striptags( shift() || \@default_striptags );
   bless $obj, $class;
+
+  my %args = (striptags => \@default_striptags, @_);
+  while( my ($key, $value) = each %args ) {
+    my $method = "set_${key}";
+    if( $obj->can($method) ) {
+      $obj->$method($value);
+    } else {
+      carp "Invalid setting '$key'";
+    }
+  }
+  return $obj;
 }
 
 sub set_striptags {
@@ -145,7 +156,15 @@ between calls to $hs->parse().
 
 =item new()
 
-Constructor. Takes no arguments.
+Constructor. Can optionally take a hash of settings (with keys
+corresponsing to the C<set_> methods below).
+
+For example, the following is a valid constructor:
+
+ my $hs = HTML::Strip->new(
+                           striptags   => [ 'script', 'iframe' ],
+                           emit_spaces => 0
+                          );
 
 =item parse()
 
@@ -167,6 +186,11 @@ Adds the string passed as an argument to the current set of strip tags.
 
 Takes a reference to an array of strings, which replace the current
 set of strip tags.
+
+=item set_emit_spaces()
+
+Takes a boolean value. If set to false, HTML::Strip will not attempt
+any conversion of tags into spaces. Set to true by default.
 
 =head2 LIMITATIONS
 

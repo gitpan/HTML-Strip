@@ -23,13 +23,15 @@ typedef struct Stripper {
 
   int f_in_striptag;
   char striptag[MAX_TAGNAMELENGTH];
-  char striptags[MAX_STRIPTAGS][MAX_TAGNAMELENGTH];
+  char o_striptags[MAX_STRIPTAGS][MAX_TAGNAMELENGTH];
   int numstriptags;
+  int o_emit_spaces;
 } Stripper;
 
 void strip_html( Stripper * stripper, const char * raw, char * clean );
 void reset( Stripper * stripper );
 void clear_striptags( Stripper * stripper );
 void add_striptag( Stripper * stripper, char * tag );
+void set_emit_spaces( Stripper * stripper, int emit );
 
 void check_end( Stripper * stripper, char );
