@@ -12,6 +12,7 @@ typedef struct Stripper {
   char f_full_tagname;
 
   int f_outputted_space;
+  int f_just_seen_tag;
 
   int f_in_quote;
   char quote;

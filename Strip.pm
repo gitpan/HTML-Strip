@@ -24,11 +24,13 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw();
 
-our $VERSION = '1.01';
+our $VERSION = '1.02';
 
 bootstrap HTML::Strip $VERSION;
 
 # Preloaded methods go here.
+
+my $_html_entities_p = eval 'require HTML::Entities';
 
 my @default_striptags = qw( title
                             style
@@ -53,7 +55,11 @@ sub set_striptags {
 
 sub parse {
   my ($self, $text) = @_;
-  return $self->strip_html( $text );
+  my $stripped = $self->strip_html( $text );
+  if( $_html_entities_p ) {
+    $stripped = HTML::Entities::decode($stripped);
+  }
+  return $stripped;
 }
 
 sub eof {
@@ -168,25 +174,26 @@ set of strip tags.
 
 =item Whitespace
 
-Despite only outputting one space character per group of tags,
-HTML::Strip can often output more than desired; such as with the
-following HTML:
+Despite only outputting one space character per group of tags, and
+avoiding doing so when tags are bordered by spaces or the start or
+end of strings, HTML::Strip can often output more than desired; such
+as with the following HTML:
 
  <h1> HTML::Strip </h1> <p> <em> <strong> fast, and brutal </strong> </em> </p>
 
 Which gives the following output:
 
-C<E<nbsp>HTML::StripE<nbsp>E<nbsp>E<nbsp>E<nbsp>E<nbsp>fast, and brutalE<nbsp>E<nbsp>E<nbsp>>
+C<E<nbsp>HTML::StripE<nbsp>E<nbsp>E<nbsp>E<nbsp>fast, and brutalE<nbsp>E<nbsp>E<nbsp>>
 
-Thus, you will probably want to post-filter the output of HTML::Strip
-to remove excess whitespace (for example, using C<tr/ / /s;>).
+Thus, you may want to post-filter the output of HTML::Strip to remove
+excess whitespace (for example, using C<tr/ / /s;>).
 (This has been improved since previous releases, but is still an issue)
 
 =item HTML Entities
 
-HTML::Strip attempts no decoding of HTML entities. Use the
-imaginatively-named L<HTML::Entities> (specifically, the
-decode_entities() method) for this purpose.
+HTML::Strip will only attempt decoding of HTML entities if
+L<HTML::Entities> is installed (whereupon it will do so
+automatically).
 
 =head2 EXPORT
 

@@ -17,38 +17,69 @@ ok(1); # If we made it this far, we're ok.
 
 my $hs = new HTML::Strip;
 
-ok( $hs->parse( '<em>test</em>' ) eq 'test ' );
-
-ok( $hs->parse( 'test' ) eq 'test' );
-
-ok( $hs->parse( '<p align="center">test</p>' ) eq ' test ' );
-
-ok( $hs->parse( '<p align="center>test</p>' ) eq '' );
-
-ok( $hs->parse( 'foo' ) eq '' );
-
+ok( $hs->parse( 'test' ), 'test' );
 $hs->eof;
 
-ok( $hs->parse( 'foo' ) eq 'foo' );
+ok( $hs->parse( '<em>test</em>' ), 'test' );
+$hs->eof;
 
-ok( $hs->parse( '<!-- <p>foo</p> bar -->baz' ) eq ' baz' );
+ok( $hs->parse( 'foo<br>bar' ), 'foo bar' );
+$hs->eof;
 
-ok( $hs->parse( '<script>foo</script>bar' ) eq ' bar' );
+ok( $hs->parse( '<p align="center">test</p>' ), 'test' );
+$hs->eof;
+
+ok( $hs->parse( '<p align="center>test</p>' ), '' );
+$hs->eof;
+
+ok( $hs->parse( '<foo>bar' ), 'bar' );
+ok( $hs->parse( '</foo>baz' ), ' baz' );
+$hs->eof;
+
+ok( $hs->parse( '<!-- <p>foo</p> bar -->baz' ), 'baz' );
+$hs->eof;
+
+ok( $hs->parse( '<img src="foo.gif" alt="a > b">bar' ), 'bar' );
+$hs->eof;
+
+ok( $hs->parse( '<script>if (a<b && a>c)</script>bar' ), 'bar' );
+$hs->eof;
+
+ok( $hs->parse( '<# just data #>bar' ), 'bar' );
+$hs->eof;
+
+#ok( $hs->parse( '<![INCLUDE CDATA [ >>>>>>>>>>>> ]]>bar' ), 'bar' );
+#$hs->eof;
+
+ok( $hs->parse( '<script>foo</script>bar' ), 'bar' );
+$hs->eof;
+
+my $html_entities_p = eval 'require HTML::Entities' ? '' : 'HTML::Entities not available';
+skip( $html_entities_p, $hs->parse( '&#060;foo&#062;' ), '<foo>' );
+$hs->eof;
+skip( $html_entities_p, $hs->parse( '&lt;foo&gt;' ), '<foo>' );
+$hs->eof;
 
 my $hs2 = new HTML::Strip;
 $hs2->set_striptags( [ 'foo' ] );
 
-ok( $hs2->parse( '<script>foo</script>bar' ) eq 'foo bar' );
+ok( $hs2->parse( '<script>foo</script>bar' ), 'foo bar' );
+$hs2->eof;
 
-ok( $hs2->parse( '<foo>foo</foo>bar' ) eq ' bar' );
+ok( $hs2->parse( '<foo>foo</foo>bar' ), 'bar' );
+$hs2->eof;
 
-ok( $hs->parse( '<script>foo</script>bar' ) eq ' bar' );
+ok( $hs->parse( '<script>foo</script>bar' ), 'bar' );
+$hs->eof;
 
 my @striptags = qw(baz quux);
 $hs->set_striptags( @striptags );
 
-ok( $hs->parse( '<baz>fumble</baz>bar<quux>foo</quux>' ) eq ' bar ' );
+ok( $hs->parse( '<baz>fumble</baz>bar<quux>foo</quux>' ), 'bar' );
+$hs->eof;
 
-ok( $hs->parse( '<baz>fumble<quux/>foo</baz>bar' ) eq 'bar' );
+ok( $hs->parse( '<baz>fumble<quux/>foo</baz>bar' ), 'bar' );
+$hs->eof;
 
-ok( $hs->parse( '<foo> </foo> <bar> baz </bar>' ) eq '    baz ' );
+ok( $hs->parse( '<foo> </foo> <bar> baz </bar>' ), '   baz ' );
+$hs->eof;

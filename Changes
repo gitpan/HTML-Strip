@@ -1,5 +1,9 @@
 Revision history for Perl extension HTML::Strip.
 
+1.02  Tue Feb 24 16:24:18 2004
+        - Yet more checks to prevent extraneous whitespace
+        - Added many more tests
+
 1.01  Mon Jul  7 18:15:59 2003
         - Removed provision for escaped quotes in attributes values
         - More checks to prevent the outputting of extraneous whitespace

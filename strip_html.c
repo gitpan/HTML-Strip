@@ -104,17 +104,30 @@ strip_html( Stripper * stripper, const char * raw, char * output ) {
         stripper->p_tagname = stripper->tagname;
         stripper->f_full_tagname = 0;
         stripper->f_closing = 0;
-        /* output a space in place of tags, and set a flag so we only do this once for every group of tags */
-        if( !stripper->f_outputted_space ) {
-          *p_output++ = ' ';
-          stripper->f_outputted_space = 1;
-        }
-      } else {
+        stripper->f_just_seen_tag = 1;
+      }
+      else {
         /* copy to stripped provided we're not in a stripped block */
         if( !stripper->f_in_striptag ) {
+          /* output a space in place of tags we have previously parsed,
+             and set a flag so we only do this once for every group of tags.
+             done here to prevent unnecessary trailing spaces */
+          if( isspace(*p_raw) ) {
+            /* don't output a space if this character is one anyway */
+            stripper->f_outputted_space = 1;
+          } else {
+            if( !stripper->f_outputted_space &&
+                stripper->f_just_seen_tag ) {
+              *p_output++ = ' ';
+              stripper->f_outputted_space = 1;
+            } else {
+              /* this character must not be a space */
+              stripper->f_outputted_space = 0;
+            }
+          }
           *p_output++ = *p_raw;
-          /* reset whitespace tag according to what character was just outputted */
-          stripper->f_outputted_space = isspace(*p_raw);
+          /* reset 'just seen tag' flag */
+          stripper->f_just_seen_tag = 0;
         }
       }
     } /* in tag check */
@@ -130,10 +143,11 @@ reset( Stripper * stripper ) {
   stripper->f_closing = 0;
   stripper->f_lastchar_slash = 0;
   stripper->f_full_tagname = 0;
+  /* hack to stop a space being output on strings starting with a tag */
   stripper->f_outputted_space = 1;
+  stripper->f_just_seen_tag = 0;
     
   stripper->f_in_quote = 0;
-    
 
   stripper->f_in_decl = 0;
   stripper->f_in_comment = 0;
