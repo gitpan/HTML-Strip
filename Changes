@@ -1,5 +1,11 @@
 Revision history for Perl extension HTML::Strip.
 
+0.05  Thu May 22 19:49:25 2003
+        - removed "XSOPT => '-C++'" from Makefile.PL as it was
+          unnecessary and causing problems for some people
+        - added "#include <string.h>" to strip_html.cpp as it's
+          absence was causing problems for some people
+
 0.04  Sun Mar 23 12:45:13 2003
         - Tweaked docs, added FAQ explaining why 0.03 failed cpan testing
 

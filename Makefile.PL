@@ -19,6 +19,5 @@ WriteMakefile(
     'INC'		=> '', # e.g., '-I/usr/include/other'
 	# Un-comment this if you add C files to link with later:
     'OBJECT'		=> '$(O_FILES)', # link all the C files too
-    'XSOPT'             => '-C++',
     'TYPEMAPS'          => ['perlobject.map'],
 );
