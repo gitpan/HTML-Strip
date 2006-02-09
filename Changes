@@ -1,5 +1,8 @@
 Revision history for Perl extension HTML::Strip.
 
+1.05  Thu Feb  9 12:11:50 2006
+	- added 'set_convert_entities' method
+
 1.04  Mon Jan 24 16:41:51 2005
 	- Replaced all instances of strcmp with strcasecmp to make the
 	  module case-insensitive towards HTML tag names

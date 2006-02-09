@@ -25,7 +25,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw();
 
-our $VERSION = '1.04';
+our $VERSION = '1.05';
 
 bootstrap HTML::Strip $VERSION;
 
@@ -33,17 +33,21 @@ bootstrap HTML::Strip $VERSION;
 
 my $_html_entities_p = eval 'require HTML::Entities';
 
-my @default_striptags = qw( title
-                            style
-                            script
-                            applet );
+my %defaults = (
+                striptags	=> [qw( title
+                                        style
+                                        script
+                                        applet )],
+                emit_spaces	=> 1,
+                decode_entities	=> 1,
+               );
 
 sub new {
   my $class = shift;
   my $obj = create();
   bless $obj, $class;
 
-  my %args = (striptags => \@default_striptags, @_);
+  my %args = (%defaults, @_);
   while( my ($key, $value) = each %args ) {
     my $method = "set_${key}";
     if( $obj->can($method) ) {
@@ -67,7 +71,7 @@ sub set_striptags {
 sub parse {
   my ($self, $text) = @_;
   my $stripped = $self->strip_html( $text );
-  if( $_html_entities_p ) {
+  if( $self->decode_entities && $_html_entities_p ) {
     $stripped = HTML::Entities::decode($stripped);
   }
   return $stripped;

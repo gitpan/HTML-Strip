@@ -155,8 +155,6 @@ reset( Stripper * stripper ) {
   stripper->f_lastchar_minus = 0;
     
   stripper->f_in_striptag = 0;
-
-  stripper->o_emit_spaces = 1;
 }
 
 void
@@ -172,11 +170,6 @@ add_striptag( Stripper * stripper, char * striptag ) {
   } else {
     fprintf( stderr, "Cannot have more than %i strip tags", MAX_STRIPTAGS );
   }
-}
-
-void
-set_emit_spaces( Stripper * stripper, int emit ) {
-  stripper->o_emit_spaces = emit;
 }
 
 

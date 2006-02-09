@@ -6,7 +6,7 @@
 # change 'tests => 1' to 'tests => last_test_to_print';
 
 use Test;
-BEGIN { plan tests => 15 };
+BEGIN { plan tests => 17 };
 use HTML::Strip;
 ok(1); # If we made it this far, we're ok.
 
@@ -59,6 +59,12 @@ skip( $html_entities_p, $hs->parse( '&#060;foo&#062;' ), '<foo>' );
 $hs->eof;
 skip( $html_entities_p, $hs->parse( '&lt;foo&gt;' ), '<foo>' );
 $hs->eof;
+$hs->set_decode_entities(0);
+skip( $html_entities_p, $hs->parse( '&#060;foo&#062;' ), '&#060;foo&#062;' );
+$hs->eof;
+skip( $html_entities_p, $hs->parse( '&lt;foo&gt;' ), '&lt;foo&gt;' );
+$hs->eof;
+
 
 my $hs2 = new HTML::Strip;
 $hs2->set_striptags( [ 'foo' ] );
