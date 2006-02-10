@@ -1,7 +1,10 @@
 Revision history for Perl extension HTML::Strip.
 
+1.06  Fri Feb 10 11:18:35 2006
+	- documented 'set_decode_entities' method
+
 1.05  Thu Feb  9 12:11:50 2006
-	- added 'set_convert_entities' method
+	- added 'set_decode_entities' method
 
 1.04  Mon Jan 24 16:41:51 2005
 	- Replaced all instances of strcmp with strcasecmp to make the

@@ -25,7 +25,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw();
 
-our $VERSION = '1.05';
+our $VERSION = '1.06';
 
 bootstrap HTML::Strip $VERSION;
 
@@ -196,6 +196,11 @@ set of strip tags.
 Takes a boolean value. If set to false, HTML::Strip will not attempt
 any conversion of tags into spaces. Set to true by default.
 
+=item set_decode_entities()
+
+Takes a boolean value. If set to false, HTML::Strip will decode HTML
+entities. Set to true by default.
+
 =head2 LIMITATIONS
 
 =over 4
@@ -220,8 +225,7 @@ excess whitespace (for example, using C<tr/ / /s;>).
 =item HTML Entities
 
 HTML::Strip will only attempt decoding of HTML entities if
-L<HTML::Entities> is installed (whereupon it will do so
-automatically).
+L<HTML::Entities> is installed.
 
 =head2 EXPORT
 
