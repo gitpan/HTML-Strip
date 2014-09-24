@@ -1,17 +1,33 @@
-
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 #include "strip_html.h"
-
 
 void
 strip_html( Stripper * stripper, const char * raw, char * output ) {
   const char * p_raw = raw;
   const char * raw_end = raw + strlen(raw);
   char * p_output = output;
-    
+
   while( p_raw < raw_end ) {
+    if( stripper->o_debug ) {
+      printf( "[DEBUG] char %c state %c %c %c tag:%5s, %c %c %c %c, %c %c %c %c:%c, ",
+        *p_raw,
+        (stripper->f_closing ? 'C' : ' '),
+        (stripper->f_in_tag ? 'T' : ' '),
+        (stripper->f_full_tagname ? 'F' : ' '),
+        stripper->tagname,
+        (stripper->f_just_seen_tag ? 'J' : ' '),
+        (stripper->f_outputted_space ? 'S' : ' '),
+        (stripper->f_lastchar_slash ? '/' : ' '),
+        (stripper->f_lastchar_minus ? '-' : ' '),
+        (stripper->f_in_decl ? 'D' : ' '),
+        (stripper->f_in_comment ? 'C' : ' '),
+        (stripper->f_in_striptag ? 'X' : ' '),
+        (stripper->f_in_quote ? 'Q' : ' '),
+        (stripper->quote ? stripper->quote : ' ')
+      );
+    }
     if( stripper->f_in_tag ) {
       /* inside a tag */
       /* check if we know either the tagname, or that we're in a declaration */
@@ -23,7 +39,8 @@ strip_html( Stripper * stripper, const char * raw, char * output ) {
         /* then check if the first character is a '/', in which case, this is a closing tag */
         else if( stripper->p_tagname == stripper->tagname && *p_raw == '/' ) {
           stripper->f_closing = 1;
-        } else {
+        /* we only care about closing tags within a stripped tags block (e.g. scripts) */
+        } else if( !stripper->f_in_striptag || stripper->f_closing ) {
           /* if we don't have the full tag name yet, add current character unless it's whitespace, a '/', or a '>';
              otherwise null pad the string and set the full tagname flag, and check the tagname against stripped ones.
              also sanity check we haven't reached the array bounds, and truncate the tagname here if we have */
@@ -41,7 +58,7 @@ strip_html( Stripper * stripper, const char * raw, char * output ) {
               /* if we're outside a stripped tag block, check tagname against stripped tag list */
             } else if( !stripper->f_in_striptag && !stripper->f_closing ) {
               int i;
-              for( i = 0; i <= stripper->numstriptags; i++ ) {
+              for( i = 0; i < stripper->numstriptags; i++ ) {
                 if( strcasecmp( stripper->tagname, stripper->o_striptags[i] ) == 0 ) {
                   stripper->f_in_striptag = 1;
                   strcpy( stripper->striptag, stripper->tagname );
@@ -61,8 +78,9 @@ strip_html( Stripper * stripper, const char * raw, char * output ) {
           }
         } else {
           /* not in a quote */
-          /* check for quote characters */
-          if( *p_raw == '\'' || *p_raw == '\"' ) {
+          /* check for quote characters, but not in a comment */
+          if( !stripper->f_in_comment &&
+              ( *p_raw == '\'' || *p_raw == '\"' ) ) {
             stripper->f_in_quote = 1;
             stripper->quote = *p_raw;
             /* reset lastchar_* flags in case we have something perverse like '-"' or '/"' */
@@ -112,30 +130,43 @@ strip_html( Stripper * stripper, const char * raw, char * output ) {
             /* output a space in place of tags we have previously parsed,
                and set a flag so we only do this once for every group of tags.
                done here to prevent unnecessary trailing spaces */
-            if( isspace(*p_raw) ) {
+            if( !isspace(*p_raw) &&
               /* don't output a space if this character is one anyway */
-              stripper->f_outputted_space = 1;
-            } else {
-              if( !stripper->f_outputted_space &&
-                  stripper->f_just_seen_tag ) {
-                *p_output++ = ' ';
-                stripper->f_outputted_space = 1;
-              } else {
-                /* this character must not be a space */
-                stripper->f_outputted_space = 0;
+                !stripper->f_outputted_space &&
+                stripper->f_just_seen_tag ) {
+              if( stripper->o_debug ) {
+                printf("SPACE ");
               }
+              *p_output++ = ' ';
+              stripper->f_outputted_space = 1;
             }
+          }
+          if( stripper->o_debug ) {
+            printf("CHAR %c", *p_raw);
           }
           *p_output++ = *p_raw;
           /* reset 'just seen tag' flag */
           stripper->f_just_seen_tag = 0;
+          /* reset 'outputted space' flag if character is not one */
+          if (!isspace(*p_raw)) {
+            stripper->f_outputted_space = 0;
+          } else {
+            stripper->f_outputted_space = 1;
+          }
         }
       }
     } /* in tag check */
     p_raw++;
+    if( stripper->o_debug ) {
+      printf("\n");
+    }
   } /* while loop */
 
   *p_output = 0;
+
+  if (stripper->o_auto_reset) {
+    reset( stripper );
+  }
 }
 
 void
@@ -147,14 +178,15 @@ reset( Stripper * stripper ) {
   /* hack to stop a space being output on strings starting with a tag */
   stripper->f_outputted_space = 1;
   stripper->f_just_seen_tag = 0;
-    
+
   stripper->f_in_quote = 0;
 
   stripper->f_in_decl = 0;
   stripper->f_in_comment = 0;
   stripper->f_lastchar_minus = 0;
-    
+
   stripper->f_in_striptag = 0;
+
 }
 
 void
@@ -172,6 +204,9 @@ add_striptag( Stripper * stripper, char * striptag ) {
   }
 }
 
+#ifdef _MSC_VER
+#define strcasecmp(a,b) stricmp(a,b)
+#endif
 
 void
 check_end( Stripper * stripper, char end ) {

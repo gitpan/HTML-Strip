@@ -1,5 +1,21 @@
 Revision history for Perl extension HTML::Strip.
 
+1.07  Tue Sep 23 14:44:08 UTC 2014
+    - fix to bug RT#19036 - tags not replaced with spaces when only a single
+      character is between the tags
+    - fix to bug RT#35345 - mathematical conparisons within <script> tags
+      misunderstood
+    (patches contributed by Adriano Ferreira)
+    - Exporter was never needed
+    - Allow other filtering operations than just decoding of HTML entities
+    - Modernised test suite
+    - Adds 'auto_reset' attribute, which allows automagic use of $hs->eof
+    - fixes quotes in html comments (RT#32355)
+    (patch contributed by rurban@cpan.org)
+    - MSVC doesnt define strcasecmp, use stricmp instead
+    (patch contributed by Damyan Ivanov)
+    - fixes POD errors
+
 1.06  Fri Feb 10 11:18:35 2006
 	- documented 'set_decode_entities' method
 

@@ -5,7 +5,7 @@
 
 #include "strip_html.h"
 
-MODULE = HTML::Strip		PACKAGE = HTML::Strip		
+MODULE = HTML::Strip		PACKAGE = HTML::Strip
 
 PROTOTYPES: ENABLE
 
@@ -39,7 +39,7 @@ strip_html( stripper, raw )
   strip_html( stripper, raw, clean );
   RETVAL = clean;
  OUTPUT:
-  RETVAL  
+  RETVAL
  CLEANUP:
   Safefree( clean );
 
@@ -88,7 +88,7 @@ set_striptags_ref( stripper, tagref )
   int n;
   if( (SvROK(tagref)) &&
       (SvTYPE(SvRV(tagref)) == SVt_PVAV) ) {
-    tags = (AV *) SvRV(tagref);  
+    tags = (AV *) SvRV(tagref);
   } else {
     XSRETURN_UNDEF;
   }
@@ -103,3 +103,33 @@ set_striptags_ref( stripper, tagref )
      char * tag = SvPV(*av_fetch(tags, n, 0), l);
      add_striptag( stripper, tag );
   }
+
+void
+set_auto_reset( stripper, value )
+  Stripper * stripper
+  int value
+ CODE:
+  stripper->o_auto_reset = value;
+
+int
+auto_reset( stripper )
+  Stripper * stripper
+ CODE:
+  RETVAL = stripper->o_auto_reset;
+ OUTPUT:
+  RETVAL
+
+void
+set_debug( stripper, value )
+  Stripper * stripper
+  int value
+ CODE:
+  stripper->o_debug = value;
+
+int
+debug( stripper )
+  Stripper * stripper
+ CODE:
+  RETVAL = stripper->o_debug;
+ OUTPUT:
+  RETVAL

@@ -27,6 +27,10 @@ typedef struct Stripper {
   int numstriptags;
   int o_emit_spaces;
   int o_decode_entities;
+
+  int o_auto_reset;
+
+  int o_debug;
 } Stripper;
 
 void strip_html( Stripper * stripper, const char * raw, char * clean );

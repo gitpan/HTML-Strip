@@ -1,85 +1,108 @@
 package HTML::Strip;
 
+require DynaLoader;
+our @ISA = qw(DynaLoader);
+our $VERSION = '1.07';
+bootstrap HTML::Strip $VERSION;
+
 use 5.006;
 use warnings;
 use strict;
 
-use Carp qw( carp croak );
+use Carp;
 
-require Exporter;
-require DynaLoader;
-
-our @ISA = qw(Exporter DynaLoader);
-
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-
-# This allows declaration	use HTML::Strip ':all';
-# If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
-# will save memory.
-our %EXPORT_TAGS = ( 'all' => [ qw(
-                                  ) ] );
-
-our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-
-our @EXPORT = qw();
-
-our $VERSION = '1.06';
-
-bootstrap HTML::Strip $VERSION;
-
-# Preloaded methods go here.
-
-my $_html_entities_p = eval 'require HTML::Entities';
+my $_html_entities_p = eval { require HTML::Entities; 1 };
 
 my %defaults = (
-                striptags	=> [qw( title
-                                        style
-                                        script
-                                        applet )],
-                emit_spaces	=> 1,
-                decode_entities	=> 1,
-               );
+    striptags => [qw( title
+                      style
+                      script
+                      applet )],
+    emit_spaces	    => 1,
+    decode_entities	=> 1,
+    filter          => $_html_entities_p ? 'filter_entities' : undef,
+    auto_reset      => 0,
+    debug           => 0,
+);
 
 sub new {
-  my $class = shift;
-  my $obj = create();
-  bless $obj, $class;
+    my $class = shift;
+    my $obj = create();
+    bless $obj, $class;
 
-  my %args = (%defaults, @_);
-  while( my ($key, $value) = each %args ) {
-    my $method = "set_${key}";
-    if( $obj->can($method) ) {
-      $obj->$method($value);
-    } else {
-      carp "Invalid setting '$key'";
+    my %args = (%defaults, @_);
+    while( my ($key, $value) = each %args ) {
+        my $method = "set_${key}";
+        if( $obj->can($method) ) {
+            $obj->$method($value);
+        } else {
+            Carp::carp "Invalid setting '$key'";
+        }
     }
-  }
-  return $obj;
+    return $obj;
 }
 
 sub set_striptags {
-  my ($self, @tags) = @_;
-  if( ref($tags[0]) eq 'ARRAY' ) {
-    $self->set_striptags_ref( $tags[0] );
-  } else {
-    $self->set_striptags_ref( \@tags );
-  }
+    my ($self, @tags) = @_;
+    if( ref($tags[0]) eq 'ARRAY' ) {
+        $self->set_striptags_ref( $tags[0] );
+    } else {
+        $self->set_striptags_ref( \@tags );
+    }
+}
+
+{
+    # an inside-out object approach
+    # for the 'filter' attribute
+    my %filter_of;
+
+    sub set_filter {
+        my ($self, $filter) = @_;
+        $filter_of{0+$self} = $filter;
+    }
+
+    sub filter {
+        my $self = shift;
+        return $filter_of{0+$self}
+    }
+
+    sub DESTROY {
+        my $self = shift;
+        delete $filter_of{0+$self};
+    }
+}
+
+# $decoded_string = $self->filter_entities( $string )
+sub filter_entities {
+    my $self = shift;
+    if( $self->decode_entities ) {
+        return HTML::Entities::decode($_[0]);
+    }
+    return $_[0];
+}
+
+sub _do_filter {
+    my $self = shift;
+    my $filter = $self->filter;
+    # no filter: return immediately
+    return $_[0] unless defined $filter;
+
+    if ( !ref $filter ) { # method name
+        return $self->$filter( @_ );
+    } else { # code ref
+        return $filter->( @_ );
+    }
 }
 
 sub parse {
-  my ($self, $text) = @_;
-  my $stripped = $self->strip_html( $text );
-  if( $self->decode_entities && $_html_entities_p ) {
-    $stripped = HTML::Entities::decode($stripped);
-  }
-  return $stripped;
+    my ($self, $text) = @_;
+    my $stripped = $self->strip_html( $text );
+    return $self->_do_filter( $stripped );
 }
 
 sub eof {
-  my $self = shift;
-  $self->reset();
+    my $self = shift;
+    $self->reset();
 }
 
 1;
@@ -136,7 +159,9 @@ If the tag starts with an exclamation mark, it is assumed to be a
 declaration or a comment. Within such tags, C<E<gt>> characters do not
 end the tag if they appear within pairs of double dashes (e.g. C<E<lt>!--
 E<lt>a href="old.htm"E<gt>old pageE<lt>/aE<gt> --E<gt>> would be
-stripped completely).
+stripped completely). Inside a comment, no parsing for quotes
+is done as well. (That means C<E<lt>!-- comment with ' quote " --E<gt>>
+are entirely stripped.)
 
 =back
 
@@ -154,9 +179,14 @@ quote, comment, or whatever; it will remember this, and expect the
 next call to parse to start with the remains of said tag.
 
 If this is not going to be the case, be sure to call $hs->eof()
-between calls to $hs->parse().
+between calls to $hs->parse(). Alternatively, you may
+set C<auto_reset> to true on the constructor or any time
+after with C<set_auto_reset>, so that the parser will always
+operate in one-shot basis (resetting after each parsed chunk).
 
 =head2 METHODS
+
+=over
 
 =item new()
 
@@ -201,6 +231,29 @@ any conversion of tags into spaces. Set to true by default.
 Takes a boolean value. If set to false, HTML::Strip will decode HTML
 entities. Set to true by default.
 
+=item filter_entities()
+
+If HTML::Entities is available, this method behaves just
+like invoking HTML::Entities::decode_entities, except that
+it respects the current setting of 'decode_entities'.
+
+=item set_filter()
+
+Sets a filter to be applied after tags were stripped.
+It may accept the name of a method (like 'filter_entities')
+or a code ref. By default, its value is 'filter_entities'
+if HTML::Entities is available or C<undef> otherwise.
+
+=item set_auto_reset()
+
+Takes a boolean value. If set to true, C<parse> resets after
+each call (equivalent to calling C<eof>). Otherwise, the
+parser remembers its state from one call to C<parse> to
+another, until you call C<eof> explicitly. Set to false
+by default.
+
+=back
+
 =head2 LIMITATIONS
 
 =over 4
@@ -226,6 +279,8 @@ excess whitespace (for example, using C<tr/ / /s;>).
 
 HTML::Strip will only attempt decoding of HTML entities if
 L<HTML::Entities> is installed.
+
+=back
 
 =head2 EXPORT
 
