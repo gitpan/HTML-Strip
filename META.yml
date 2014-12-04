@@ -1,22 +1,30 @@
----
-abstract: 'Perl extension for stripping HTML markup from text.'
+--- #YAML:1.0
+name:               HTML-Strip
+version:            2.07
+abstract:           Perl extension for stripping HTML markup from text.
 author:
-  - 'Alex Bowley <kilinrax@cpan.org>'
-build_requires:
-  ExtUtils::MakeMaker: 0
+    - Alex Bowley <kilinrax@cpan.org>
+license:            perl
+distribution_type:  module
 configure_requires:
-  ExtUtils::MakeMaker: 0
-distribution_type: module
-dynamic_config: 0
-generated_by: 'ExtUtils::MakeMaker version 6.57_05'
-license: unknown
-meta-spec:
-  url: http://module-build.sourceforge.net/META-spec-v1.4.html
-  version: 1.4
-name: HTML-Strip
+    ExtUtils::MakeMaker:  0
+build_requires:
+    ExtUtils::MakeMaker:  0
+requires:
+    Carp:             0
+    DynaLoader:       0
+    perl:             5.008
+    strict:           0
+    Test::Exception:  0
+    Test::More:       0
+    warnings:         0
 no_index:
-  directory:
-    - t
-    - inc
-requires: {}
-version: 2.06
+    directory:
+        - t
+        - inc
+generated_by:       ExtUtils::MakeMaker version 6.57_05
+meta-spec:
+    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
+    version:  1.4
+recommended:
+    HTML::Entities:  0
