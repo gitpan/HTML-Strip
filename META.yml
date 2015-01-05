@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               HTML-Strip
-version:            2.08
+version:            2.09
 abstract:           Perl extension for stripping HTML markup from text.
 author:
     - Alex Bowley <kilinrax@cpan.org>
